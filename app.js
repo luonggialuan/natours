@@ -20,6 +20,8 @@ const viewRouter = require('./routes/viewRoutes');
 
 const app = express();
 
+app.enable('trust proxy');
+
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
 
@@ -148,6 +150,15 @@ app.use(compression());
 //     console.log('Hello from the middleware');
 //     next();
 // });
+
+//  https-redirect-node-heroku      https://jaketrent.com/post/https-redirect-node-heroku
+if (process.env.NODE_ENV === 'production') {
+    app.use((req, res, next) => {
+        if (req.header('x-forwarded-proto') !== 'https')
+            res.redirect(`https://${req.header('host')}${req.url}`);
+        else next();
+    });
+}
 
 // Test middleware
 app.use((req, res, next) => {
